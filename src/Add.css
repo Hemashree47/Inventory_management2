@@ -1,0 +1,41 @@
+Button{
+    width: 200px;
+    height: 20px;
+    margin-left: 1000px;
+    margin-top: 50px;
+}
+.modal{
+    width: 400px;
+    height: 200px;
+    background-color: aquamarine;
+    margin-left: 400px;
+    margin-top: 50px;
+    border-radius: 20px;
+}
+.modal-content{
+     width: 130px;
+     margin-left: 50px;
+     margin-top: 10px;
+     
+}
+.projectname{
+    margin-top: 30px;
+}
+.data{
+    position: absolute;
+    width: 150px;
+    margin-left: 150px;
+    margin-top: -40px;
+}
+
+.sub{
+    margin-left: 200px;
+    margin-top: -40px;
+    width: 100px;
+}
+.close-modal{
+    margin-left: 200px;
+    margin-top: 20px;
+    width: 100px;
+}
+

@@ -1,0 +1,42 @@
+.modal{
+    width: 400px;
+    height: 200px;
+    background-color: aquamarine;
+    margin-left: 400px;
+    margin-top: 50px;
+    border-radius: 20px;
+}
+.modal-content{
+     width: 130px;
+     margin-left: 50px;
+     margin-top: 10px;
+     
+}
+.component1{
+    margin-left: -20px;
+    width: 180px;
+    /* margin-top: 20px; */
+}
+.component2{
+    margin-left: -20px;
+}
+.data1{
+    position: absolute;
+    margin-left: 160px;
+    margin-top: -83px;
+}
+.num{
+    position: absolute;
+    left: 610px;
+    top:230px;
+}
+.sub{
+    margin-left: 200px;
+    margin-top: -40px;
+    width: 100px;
+}
+.close-modal{
+    margin-left: 200px;
+    margin-top: 20px;
+    width: 100px;
+}

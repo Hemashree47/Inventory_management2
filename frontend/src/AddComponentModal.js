@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './AddComponent.css'; // Ensure you create a corresponding CSS file
+import './AddComponentModal.css'; // Ensure you create a corresponding CSS file
 
 const AddComponentModal = ({ isOpen, onClose, onSubmit }) => {
     const [componentName, setComponentName] = useState('');

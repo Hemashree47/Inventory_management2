@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getAllProjects } from './api/projectApi';
+import { getAllProjects } from './projectApi';
 
 const ProjectList = () => {
   const [projects, setProjects] = useState([]);

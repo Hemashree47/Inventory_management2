@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getProjectComponents } from './api/projectApi';
+import { getProjectComponents } from './projectApi';
 
 const ProjectComponents = ({ projectName }) => {
   const [components, setComponents] = useState({});

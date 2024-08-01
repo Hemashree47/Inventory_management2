@@ -1,4 +1,5 @@
 import Project from "../models/user.project.model.js";
+let components = {};
 
 export const addProject=async(req,res)=>{
     try{
@@ -102,3 +103,85 @@ export const getProjectComponents = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+export const updateComponentQuantity = async (req, res) => {
+    const { projectName, componentName } = req.params;
+    const { quantity } = req.body;
+
+    try {
+        // Find the project by projectName
+        const project = await Project.findOne({ projectName });
+
+        if (!project) {
+            return res.status(404).json({ error: 'Project not found' });
+        }
+
+        // Find the component within the project's components map
+        const component = project.components.get(componentName);
+
+        if (!component) {
+            return res.status(404).json({ error: 'Component not found' });
+        }
+
+        // Update the component's quantity
+        component.quantity = quantity;
+
+        // Save the project with the updated component
+        await project.save();
+
+        res.status(200).json({
+            message: 'Quantity updated successfully',
+            component: project.components.get(componentName)
+        });
+
+    } catch (error) {
+        console.error('Error updating component quantity:', error.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+
+export const deleteProject=async (req,res) => {
+    try{
+        const {projectName}=req.params;
+        const project=await Project.findOneAndDelete({projectName});
+        if(!project){
+            return res.status(404).json({error:'Project not found'});
+        }
+        
+        console.log("Project deleted successfully");
+        res.status(201).json({message:"project deleted successfully"})
+    }catch(error){
+        console.error("Error in deleting project:",error.message);
+    }
+}
+
+export const updateProjectName = async (req, res) => {
+    try {
+        const { projectName } = req.params;
+        const { newProjectName } = req.body;
+
+        if (!newProjectName || typeof newProjectName !== 'string') {
+            return res.status(400).json({ error: 'Valid new project name is required' });
+        }
+
+        const existingProject = await Project.findOne({ projectName: newProjectName });
+        if (existingProject) {
+            return res.status(400).json({ error: 'New project name already exists' });
+        }
+
+        const project = await Project.findOne({ projectName });
+        if (!project) {
+            return res.status(404).json({ error: 'Project not found' });
+        }
+
+        project.projectName = newProjectName;
+        await project.save();
+
+        res.status(200).json({ message: 'Project name updated successfully' });
+    } catch (error) {
+        console.error("Error updating project name:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+

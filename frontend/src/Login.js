@@ -1,78 +1,79 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import ProjectModal from './ProjectModal';
 import { useNavigate } from 'react-router-dom';
-import './Login.css';
 
-const LoginSignup = () => {
-  const [isSignup, setIsSignup] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    username: '',
-    password: '',
-    confirmPassword: '',
-  });
 
-  const { name, username, password, confirmPassword } = formData;
-
+const Login = ({ onLoginSuccess }) => {
+  const [formData, setFormData] = useState({ username: '', password: '' });
+  const { username, password } = formData;
   const navigate = useNavigate();
 
-  const onChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (isSignup) {
-      // Signup logic
-      try {
-        const res = await axios.post('http://localhost:5000/api/signup', { name, username, password, confirmPassword });
-        console.log(res.data);
-      } catch (err) {
-        console.error(err.response.data);
-      }
-    } else {
-      // Login logic
-      try {
-        const res = await axios.post('http://localhost:5000/api/login', { username, password });
-        console.log(res.data);
-        navigate('/ProjectModal')
-      } catch (err) {
-        console.error(err.response.data);
-      }
+    try {
+      const res = await axios.post('http://localhost:5000/api/login', { username, password });
+      document.cookie = `token=${res.data.token}; path=/;`;
+      onLoginSuccess(res.data.token); // Pass the token to the parent component
+      navigate('/ProjectModal');
+    } catch (err) {
+      console.error('Error logging in:', err.response?.data || err.message);
+      if(!password){alert("Password is incorrect!!")}
     }
   };
 
   return (
-    <div className="form-container">
-      <form onSubmit={onSubmit}>
-        {isSignup && (
-          <>
-            <h1>Signup</h1>
-            <input type="text" name="name" value={name} onChange={onChange} placeholder="Name" required />
-            <input type="password" name="confirmPassword" value={confirmPassword} onChange={onChange} placeholder="Confirm Password" required />
-          </>
-        )}
-        {!isSignup && <h1>Login</h1>}
-        <input type="text" name="username" value={username} onChange={onChange} placeholder="Username" required />
-        <input type="password" name="password" value={password} onChange={onChange} placeholder="Password" required />
-        <button type="submit">{isSignup ? 'Sign Up' : 'Login'}</button>
-        {/* <button type="button" onClick={() => setIsSignup(!isSignup)}>
-          {isSignup ? 'Switch to Login' : 'Switch to Signup'}
-        </button> */}
-        {!isSignup && (
-          <p className="signup-link">
-            Don't have an account? <button type="button" onClick={() => setIsSignup(true)}>Sign Up</button>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
+        <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="username" className="block text-gray-700">Username</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              value={username}
+              onChange={onChange}
+              placeholder="Username"
+              required
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="block text-gray-700">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={password}
+              onChange={onChange}
+              placeholder="Password"
+              required
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Login
+          </button>
+          <p className="text-center text-gray-600">
+            Don't have an account?{' '}
+            <button
+              type="button"
+              onClick={() => navigate('/signup')}
+              className="text-blue-500 hover:underline"
+            >
+              Sign Up
+            </button>
           </p>
-        )}
-        {isSignup && (
-          <p className="signup-link">
-            Already have an account? <button type="button" onClick={() => setIsSignup(false)}>Login</button>
-          </p>
-        )}
-      </form>
+        </form>
+      </div>
     </div>
   );
 };
 
-export default LoginSignup;
+export default Login;

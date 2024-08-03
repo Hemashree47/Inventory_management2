@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
+import logo from './images/xyma.png';
 
 const Login = ({ onLoginSuccess }) => {
   const [formData, setFormData] = useState({ username: '', password: '' });
@@ -24,9 +24,12 @@ const Login = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
-        <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
+    <div className="flex items-center justify-center min-h-screen  bg-gradient-to-r from-purple-100 to-blue-200">
+      <div className="bg-gradient-to-r from-blue-50 to-white p-8 rounded-lg shadow-md w-full max-w-sm">
+      <div className="flex justify-center mb-6">
+          <img src={logo} alt="Logo" className="h-16" /> {/* Adjust height as needed */}
+        </div>
+        <h1 className="text-2xl text-gray-600 font-bold mb-6 text-center">Login</h1>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <label htmlFor="username" className="block text-gray-700">Username</label>

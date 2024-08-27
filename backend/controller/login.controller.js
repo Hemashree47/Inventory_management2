@@ -51,15 +51,22 @@ export const login = async (req, res) => {
             return res.status(400).json({ error: "Password is incorrect" });
         }
 
-        const token = jwt.sign({ userId: user._id, username: user.username }, SECRET_KEY, { expiresIn: "2h" });
+        const token = jwt.sign(
+            { userId: user._id, username: user.username, role: user.role },
+            SECRET_KEY,
+            { expiresIn: "2h" }
+        );
 
         res.cookie("token", token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: "Strict" });
-        res.status(200).json({ msg: 'Login successful', token }); // Include token in response
+
+        // Ensure userId is included in the response
+        res.status(200).json({ msg: 'Login successful', token, userId: user._id });
     } catch (error) {
         console.log("Error in login controller", error.message);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
 
 
 export const logout = (req, res) => {
@@ -82,5 +89,40 @@ export const checkSession = (req, res) => {
         res.status(200).json({ msg: 'Session is valid' });
     });
 };
+
+export const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (token == null) return res.sendStatus(401); // If no token, return 401
+
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403); // If invalid token, return 403
+        req.user = user;
+        next();
+    });
+};
+
+
+export const validatePassword=async(req,res)=>{
+    const { username, password } = req.body;
+
+    try {
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Incorrect password' });
+        }
+
+        res.status(200).json({ message: 'Password validated successfully' });
+    } catch (error) {
+        console.error('Error validating password:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
 
 

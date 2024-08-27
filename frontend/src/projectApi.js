@@ -14,6 +14,9 @@ export const addComponent = (projectName, component) => {
   return axios.post(`${API_URL}/projects/${projectName}/components`, component, { withCredentials: true });
 };
 
+
+
+
 export const getProjectComponents = async (projectName) => {
   try {
     const response = await axios.get(`${API_URL}/projects/${projectName}/components`, { withCredentials: true });
@@ -76,4 +79,6 @@ export const validatePassword = async ({ username, password }) => {
   });
   return response.data;
 };
+
+
 

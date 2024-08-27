@@ -1,10 +1,21 @@
 import express from "express";
-import {login,signup,logout,checkSession} from "../controller/login.controller.js"
+import multer from "multer";
+import nodemailer from "nodemailer";
+
+import {login,signup,logout,checkSession,validatePassword,authenticateToken} from "../controller/login.controller.js"
+
 import {addProject,addComponents,getAllProjects,getProjectComponents,updateComponentQuantity,deleteProject,updateProjectName} from "../controller/project.controller.js"
+
+import {sendMail,response,getRequests,getAttachments,updateStatus,requests} from '../controller/mail.controller.js';
+
+const upload = multer({ dest: 'uploads/' }); 
+
 const router=express.Router();
 
 
 router.post("/login",login);
+
+//router.post("/login/user",loginAdmin);
 
 router.post("/signup",signup);
 
@@ -28,25 +39,18 @@ router.delete("/checkSession",checkSession);
 
 router.put("/projects/:projectName",updateProjectName);
 
-router.post('/validate-password', async (req, res) => {
-    const { username, password } = req.body;
+router.post('/validate-password', validatePassword);
 
-    try {
-        const user = await User.findOne({ username });
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
+router.post('/sendMail', upload.array('attachments'),sendMail)
+    
+router.get('/response', response);
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(401).json({ error: 'Incorrect password' });
-        }
+router.get('/getRequests',getRequests);
 
-        res.status(200).json({ message: 'Password validated successfully' });
-    } catch (error) {
-        console.error('Error validating password:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
+router.get('/attachments/:id/:filename',getAttachments);
+
+router.put('/updateStatus/:id',updateStatus);
+
+router.get('/:userId/requests' ,requests)
 
 export default router;

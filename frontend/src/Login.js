@@ -13,15 +13,28 @@ const Login = ({ onLoginSuccess }) => {
   const onSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/login', { username, password });
-      document.cookie = `token=${res.data.token}; path=/;`;
-      onLoginSuccess(res.data.token); // Pass the token to the parent component
-      navigate('/ProjectModal');
+        const res = await axios.post('http://localhost:5000/api/login', { username, password });
+
+        // Log the response for debugging
+        console.log('Login response:', res.data);
+
+        document.cookie = `token=${res.data.token}; path=/`;
+
+        // Store user ID in local storage
+        if (res.data.userId) {
+            localStorage.setItem('userId', res.data.userId); // Ensure userId is stored
+            onLoginSuccess(res.data.token); // Pass the token to the parent component
+            navigate('/ButtonPage');
+        } else {
+            console.error('User ID is missing in response');
+            alert('Login failed. User ID is missing.');
+        }
     } catch (err) {
-      console.error('Error logging in:', err.response?.data || err.message);
-      if(!password){alert("Password is incorrect!!")}
+        console.error('Error logging in:', err.response?.data || err.message);
+        alert('Login failed. Please try again.');
     }
-  };
+};
+  
 
   return (
     <div className="flex items-center justify-center min-h-screen  bg-gradient-to-r from-purple-100 to-blue-200">

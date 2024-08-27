@@ -26,7 +26,7 @@ const Signup = () => {
       return;
     }
     try {
-      const res = await axios.post('http://localhost:5000/api/signup', { name, username, password });
+      const res = await axios.post('http://localhost:5000/api/signup', { name, username, password, confirmPassword });
       console.log(res.data);
       navigate('/Login'); // Redirect to login on successful signup
     } catch (err) {

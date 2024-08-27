@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import ProjectModal from './ProjectModal';
-import ProjectComponentsPage from './ProjectComponentsPage';
+import ProjectModal from './Inventory/ProjectModal';
+import ProjectComponentsPage from './Inventory/ProjectComponentsPage';
 import Signup from './Signup';
 import Login from './Login';
+import ButtonPage from './button/ButtonPage'
+import RequestForm from './Form/RequestForm'
 import axios from 'axios';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import RequestLists from './Form/RequestLists';
+import UserDashboard from './Form/UserDashboard';
 
 // Function to get the token from cookies
 const getTokenFromCookies = () => {
@@ -47,6 +50,7 @@ function App() {
 
     const handleLoginSuccess = (token) => {
         setIsAuthenticated(true);
+        
         startSessionTimer(token);
     };
 
@@ -93,11 +97,29 @@ function App() {
             {/* <Route path="/" element={<ProjectModal />} />
             <Route path="/projects/:projectName" element={<ProjectComponentsPage />} />
             <Route path="/ProjectModal" element={<ProjectModal />} /> */}
-           <Route path="/" element={<Navigate to={isAuthenticated ? "/ProjectModal" : "/login"} />} />
+           {/* <Route path="/" element={<Navigate to={isAuthenticated ? "/ProjectModal" : "/login"} />} />
             <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/projects/:projectName" element={isAuthenticated ? <ProjectComponentsPage /> : <Navigate to="/login" />} />
-            <Route path="/ProjectModal" element={isAuthenticated ? <ProjectModal /> : <Navigate to="/login" />} />
+            <Route path="/ProjectModal" element={isAuthenticated ? <ProjectModal /> : <Navigate to="/login" />} /> */}
+
+            <Route path='/' element={<Login onLoginSuccess={handleLoginSuccess} />} />
+            <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
+
+            <Route path="/userDashboard" element={<UserDashboard />} />
+            <Route
+            path="/RequestForm"
+            element={<RequestForm userId={localStorage.getItem('userId')} />}
+            />
+            <Route
+            path="/RequestLists"
+            element={<RequestLists userId={localStorage.getItem('userId')} />}
+            />
+
+            <Route path='/userRequestForm' element={< RequestForm/>}/>
+            <Route path='/userRequestLists' element={< RequestLists/>}/>
+            <Route path='/ButtonPage' element={< ButtonPage/>}/>
+            <Route path="/signup" element={<Signup />} />
         </Routes>
     );
 }

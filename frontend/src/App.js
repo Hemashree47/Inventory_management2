@@ -11,7 +11,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import RequestLists from './Form/RequestLists';
-import UserDashboard from './Form/UserDashboard';
+import AdminDashboard from './Form/AdminDashboard';
 
 // Function to get the token from cookies
 const getTokenFromCookies = () => {
@@ -106,7 +106,7 @@ function App() {
             <Route path='/' element={<Login onLoginSuccess={handleLoginSuccess} />} />
             <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
 
-            <Route path="/userDashboard" element={<UserDashboard />} />
+            <Route path="/AdminDashboard" element={<AdminDashboard />} />
             <Route
             path="/RequestForm"
             element={<RequestForm userId={localStorage.getItem('userId')} />}
@@ -120,6 +120,7 @@ function App() {
             <Route path='/userRequestLists' element={< RequestLists/>}/>
             <Route path='/ButtonPage' element={< ButtonPage/>}/>
             <Route path="/signup" element={<Signup />} />
+
         </Routes>
     );
 }

@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { RequestList } from '../mailApi';
+import { AdminRequests, RequestList } from '../mailApi';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from 'react-router-dom';
+
 
 const RequestLists = () => {
     const [requests, setRequests] = useState([]);
@@ -8,19 +12,44 @@ const RequestLists = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedStatus, setSelectedStatus] = useState('');
 
+    const Navigate=useNavigate();
+
     useEffect(() => {
         const fetchRequests = async () => {
-            try {
-                const response = await RequestList();
-                setRequests(response.data);
-            } catch (err) {
-                setError('Failed to fetch data');
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
+            const userId = localStorage.getItem('userId');
+            const role=localStorage.getItem('adminRole');
 
+            if (!userId) {
+                setError('User ID is missing.');
+                return;
+            }
+            console.log(role)
+            if(role=='admin'){
+                try {
+                    // const response = await AdminRequests();
+                    // setRequests(response.data);
+
+                    Navigate("/AdminDashboard")
+                } catch (err) {
+                    setError('Failed to fetch data');
+                    console.error('Error details:', err.response ? err.response.data : err.message);
+                } finally {
+                    setLoading(false);
+                }
+            }
+            else{
+                try {
+                    const response = await RequestList(userId);
+                    setRequests(response.data);
+                } catch (err) {
+                    setError('Failed to fetch data');
+                    console.error('Error details:', err.response ? err.response.data : err.message);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            }
+            
         fetchRequests();
     }, []);
 
@@ -93,7 +122,20 @@ const RequestLists = () => {
                                 <th className="py-2 px-4 text-left sticky top-0 z-10 bg-gray-100">Delivery Lead Time</th>
                                 <th className="py-2 px-4 text-left sticky top-0 z-10 bg-gray-100">Total Purchase Amount</th>
                                 <th className="py-2 px-4 text-left sticky top-0 z-10 bg-gray-100">Approvers</th>
-                                <th className="py-2 px-4 text-left sticky top-0 z-10 bg-gray-100">Status</th>
+                                <th className="py-2 px-4 text-left sticky top-0 z-10 bg-gray-100">
+                                    Status
+                                    {/* Status Dropdown */}
+                                    <select
+                                        value={selectedStatus}
+                                        onChange={handleStatusChange}
+                                        className="ml-2 border p-1 rounded"
+                                    >
+                                        <option value="">All</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="accepted">Accepted</option>
+                                        <option value="declined">Declined</option>
+                                    </select>
+                                </th>
                                 <th className="py-2 px-4 text-left sticky top-0 z-10 bg-gray-100">Attachments</th>
                             </tr>
                         </thead>

@@ -11,16 +11,8 @@ const requestSchema = new mongoose.Schema({
         required: true,
     },
     leadTime: {
-        type: Date,
-        required: true,
-        set: (value) => {
-            // Check if the value is a valid date string in the expected format
-            const date = moment(value, 'DD-MM-YYYY', true); // 'true' for strict parsing
-            if (!date.isValid()) {
-                throw new Error('Invalid date format for leadTime. Expected format is DD-MM-YYYY.');
-            }
-            return date.toDate(); // Convert to Date object
-        }
+        type:Date,
+        required:true,
     },
     amount: {
         type: Number,
@@ -35,19 +27,27 @@ const requestSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    attachments: {
-        filename: Object,
-        content: String, // Base64 encoded content
-    },
+    attachments: [
+        {
+            filename: {
+                type: String,
+                required: true
+            },
+            content: {
+                type: String, // Base64 encoded content
+                required: true
+            }
+        }
+    ],
     submittedAt: {
         type: Date,
         default: Date.now,
     },
-    userId: {
+    user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
-      },
+    },
 });
 
 const Form = mongoose.model('RequestForm', requestSchema);

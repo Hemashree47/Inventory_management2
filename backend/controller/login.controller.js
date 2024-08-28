@@ -60,14 +60,50 @@ export const login = async (req, res) => {
         res.cookie("token", token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: "Strict" });
 
         // Ensure userId is included in the response
-        res.status(200).json({ msg: 'Login successful', token, userId: user._id });
+        res.status(200).json({ msg: 'Login successful', token, userId: user._id ,role:user.role ,username:user.username});
     } catch (error) {
         console.log("Error in login controller", error.message);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
+export const adminSignup = async(req,res)=>{
+    const { name, username, password, adminToken } = req.body;
 
+    if (!name || !username || !password || !adminToken) {
+        return res.status(400).json({ error: 'Name, username, password, and adminToken are required' });
+    }
+
+    // Check if the provided admin token matches the required token
+    if (adminToken !== process.env.ADMIN_SIGNUP_TOKEN) {
+        return res.status(403).json({ error: 'Invalid token' });
+    }
+
+    try {
+        // Check if the username already exists
+        const existingUser = await User.findOne({ username }).exec();
+        if (existingUser) {
+            return res.status(400).json({ error: 'Username already exists' });
+        }
+
+        // Hash the password
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        // Create a new admin user
+        const newUser = new User({
+            name,
+            username,
+            password: hashedPassword,
+            role: 'admin',
+        });
+
+        await newUser.save();
+        res.status(201).json({ message: 'Admin user created successfully' });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
 
 export const logout = (req, res) => {
     res.clearCookie("token");

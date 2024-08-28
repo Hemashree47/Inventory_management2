@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { Buffer } from 'buffer';
 import mongoose from "mongoose";
+import moment from 'moment';
 
 
 const getISTTime = () => {
@@ -12,12 +13,16 @@ const getISTTime = () => {
     return new Date(utcTime.getTime() + istOffset);
     }
 
-    export const sendMail = async (req, res) => {
+export const sendMail = async (req, res) => {
     const { project, vendor, leadTime, amount, approvers, userId } = req.body;
-    const attachments = req.files || [];
     
-    console.log('Received userId:', userId);
-    console.log('Is userId a string?', typeof userId === 'string');
+    const attachments = req.files || [];
+
+    // console.log('Request Body:', req.body);
+    // console.log('Files:', req.files); // Log files
+    
+    // console.log('Received userId:', userId);
+    // console.log('Is userId a string?', typeof userId === 'string');
 
     const currentTime = getISTTime();
 
@@ -38,11 +43,12 @@ const getISTTime = () => {
         },
     });
 
-    // Convert attachments to the expected format
-    const attachmentObjects = attachments.map(file => ({
-        filename: file.originalname,
-        content: file.buffer.toString('base64') // Adjust based on your file handling
-    }));
+   // Convert attachments to the expected format
+   const attachmentObjects = attachments.map(file => ({
+    filename: file.originalname,
+    content: file.buffer.toString('base64') // Adjust based on your file handling
+}));
+
 
     // Create a new RequestForm document
     const newData = new Form({
@@ -51,13 +57,14 @@ const getISTTime = () => {
         leadTime,
         amount,
         approvers,
-        attachments: attachmentObjects,
+        attachments : attachmentObjects,
         submittedAt: currentTime,
         user: userId // Ensure this is a single ObjectId
     });
 
     try {
         await newData.save(); // Save the form first to get the ID
+    
 
         // Set up email options
         const mailOptions = {
@@ -114,17 +121,17 @@ export const response = async (req, res) => {
         return res.status(404).json({ error: 'Form not found' });
     }
 
-    // Safely get attachments from the form, default to an empty array if undefined or not an array
+    // Safely get attachments from the form
     const attachments = Array.isArray(form.attachments) ? form.attachments : [];
 
     // Convert attachments to the expected format
     const attachmentObjects = attachments.map(file => ({
         filename: file.filename, // Use the correct property names from your schema
-        content: file.content,   // This assumes 'content' is already in Base64 format
+        content: Buffer.from(file.content, 'base64') // Convert Base64 back to Buffer
     }));
 
+    console.log('Attachment Objects:', attachmentObjects);
 
-    console.log('Amount :', form.amount)
     const amount = form.amount
     // Handle response based on status
     if (amount >= 20000 && status === 'accept' ) {
@@ -151,10 +158,7 @@ export const response = async (req, res) => {
                 <br>
                 <a href="http://localhost:5000/api/response?status=decline">Decline</a>
                 `,
-                attachments: attachmentObjects.map(file => ({
-                    filename: file.filename,
-                    content: Buffer.from(file.content, 'base64'), // Convert Base64 back to Buffer
-                })),
+                attachments: attachmentObjects
         };
 
         try {
@@ -239,6 +243,25 @@ export const response = async (req, res) => {
 
 
 export const getRequests = async (req, res) => {
+    const { userId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ error: 'Invalid userId format' });
+    }
+
+    try {
+        const requests = await Form.find({ user: userId });
+        const formattedRequests = requests.map(request => ({
+            ...request.toObject(),
+            leadTime: moment(request.leadTime).format('YYYY-MM-DD')
+        }));
+        res.json(formattedRequests);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch requests', message: err.message });
+    }
+};
+
+export const adminRequests=async(req,res)=>{
     try {
         // Retrieve all documents from the Form collection
         const requests = await Form.find().exec();
@@ -247,7 +270,7 @@ export const getRequests = async (req, res) => {
         console.error('Error fetching requests:', err);
         res.status(500).send('Error fetching requests.');
     }
-};
+}
 
 function getMimeType(filename) {
     const ext = path.extname(filename).toLowerCase();
@@ -352,13 +375,30 @@ export const validateDetails = async (req, res) => {
 };
 
 export const requests = async (req, res) => {
+    const userId = req.user._id; // Assuming req.user._id is set by authentication middleware
+
     try {
-        console.log('User ID from token:', req.user.userId); // Debug log
-        const userId = req.user.userId;
-        const userRequests = await Request.find({ userId: userId });
-        res.status(200).json(userRequests);
+        const requests = await Form.find({ userId: userId });
+        res.status(200).json(requests);
     } catch (error) {
-        console.error('Error in requests handler:', error); // Debug log
-        res.status(500).json({ error: "Failed to fetch user requests" });
+        res.status(500).json({ error: 'Error fetching user requests' });
     }
+};
+
+// Middleware to verify JWT token and extract user info
+export const Middleware = (req, res, next) => {
+    const token = req.headers['authorization'];
+
+    if (!token) {
+        return res.status(401).json({ error: 'No token provided' });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        req.userId = decoded.id;
+        next();
+    });
 };

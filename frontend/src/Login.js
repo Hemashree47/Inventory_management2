@@ -23,6 +23,9 @@ const Login = ({ onLoginSuccess }) => {
         // Store user ID in local storage
         if (res.data.userId) {
             localStorage.setItem('userId', res.data.userId); // Ensure userId is stored
+            localStorage.setItem('adminRole', res.data.role);
+
+            console.log(res.data.role)
             onLoginSuccess(res.data.token); // Pass the token to the parent component
             navigate('/ButtonPage');
         } else {

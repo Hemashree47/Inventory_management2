@@ -40,9 +40,10 @@ export const sendEmail = async (formData) => {
     }
   };
   
-  export const RequestList=async()=>{
-    return axios.get(`${API_URL}/getRequests`, { withCredentials: true });
-  };
+  export const RequestList = async (userId) => {
+    return axios.get(`${API_URL}/getRequests/${userId}`, { withCredentials: true });
+};
+
   
   export const getAttachments=async()=>{
     return axios.get(`${API_URL}/getAttachments`, { withCredentials: true });
@@ -50,4 +51,8 @@ export const sendEmail = async (formData) => {
 
 export const Requests=async()=>{
   return axios.get(`${API_URL}/requests`, { withCredentials: true });
+}
+
+export const AdminRequests=async()=>{
+  return axios.get(`${API_URL}/adminRequests`, { withCredentials: true });
 }

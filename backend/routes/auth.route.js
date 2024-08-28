@@ -1,14 +1,15 @@
 import express from "express";
 import multer from "multer";
-import nodemailer from "nodemailer";
 
-import {login,signup,logout,checkSession,validatePassword,authenticateToken} from "../controller/login.controller.js"
+import {login,signup,logout,checkSession,validatePassword,authenticateToken, adminSignup} from "../controller/login.controller.js"
 
 import {addProject,addComponents,getAllProjects,getProjectComponents,updateComponentQuantity,deleteProject,updateProjectName} from "../controller/project.controller.js"
 
-import {sendMail,response,getRequests,getAttachments,updateStatus,requests} from '../controller/mail.controller.js';
+import {sendMail,response,getRequests,getAttachments,updateStatus,requests,Middleware,adminRequests} from '../controller/mail.controller.js';
 
-const upload = multer({ dest: 'uploads/' }); 
+// Multer setup
+const storage = multer.memoryStorage(); // Store files in memory
+const upload = multer({ storage: storage });
 
 const router=express.Router();
 
@@ -45,12 +46,16 @@ router.post('/sendMail', upload.array('attachments'),sendMail)
     
 router.get('/response', response);
 
-router.get('/getRequests',getRequests);
+router.get('/getRequests/:userId',getRequests);
 
 router.get('/attachments/:id/:filename',getAttachments);
 
 router.put('/updateStatus/:id',updateStatus);
 
-router.get('/:userId/requests' ,requests)
+router.get('/requests',Middleware ,requests)
+
+router.get('/adminRequests',adminRequests)
+
+router.post('/adminSignup',adminSignup)
 
 export default router;

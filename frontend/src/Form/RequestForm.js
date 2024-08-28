@@ -14,7 +14,12 @@ const RequestForm = () => {
     userId: '', // Include userId in the state
   });
 
+  
+
   useEffect(() => {
+
+    
+
     const storedUserId = localStorage.getItem('userId');
     if (storedUserId) {
       setFormData((prevData) => ({
@@ -35,25 +40,33 @@ const RequestForm = () => {
   };
 
   const handleFileChange = (e) => {
-    setFormData((prevData) => ({
+  const files = Array.from(e.target.files);
+  console.log('Selected Files:', files); // Debugging
+  setFormData((prevData) => ({
       ...prevData,
-      attachments: Array.from(e.target.files), // Convert FileList to Array
-    }));
-  };
+      attachments: files, // Update state with file array
+  }));
+};
+
+
+
+
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Get the userId from localStorage
     const storedUserId = localStorage.getItem('userId');
     if (!storedUserId || typeof storedUserId !== 'string') {
-      toast.error("User ID is missing or incorrect. Please log in again.", { autoClose: 2000 });
-      return;
+        toast.error("User ID is missing or incorrect. Please log in again.", { autoClose: 2000 });
+        return;
     }
 
     const data = new FormData();
-    Object.keys(formData).forEach((key) => {
+    Object.keys(formData).forEach(key => {
       if (key === 'attachments') {
-        formData.attachments.forEach((file) => {
+        formData.attachments.forEach(file => {
           data.append('attachments', file);
         });
       } else {
@@ -61,22 +74,28 @@ const RequestForm = () => {
       }
     });
 
-    data.append('userId', storedUserId); // Ensure userId is added as a string
+    // Check for any previous 'userId' values and remove them
+    data.delete('userId');
 
-    // Log the FormData for debugging
+    // Append userId as a string
+    data.append('userId', storedUserId);
+
+    // Debugging: Log FormData content
     for (let pair of data.entries()) {
       console.log(pair[0] + ':', pair[1]);
     }
 
     try {
-      await sendEmail(data);
-      toast.success("Request submitted successfully!", { autoClose: 2000 });
-      resetForm();
+        await sendEmail(data);
+        toast.success("Request submitted successfully!", { autoClose: 2000 });
+        resetForm();
     } catch (error) {
-      console.error("Detailed error:", error);
-      toast.error("Failed to submit request. Please try again.", { autoClose: 2000 });
+        console.error("Detailed error:", error);
+        toast.error("Failed to submit request. Please try again.", { autoClose: 2000 });
     }
-  };
+};
+
+  
 
   const resetForm = () => {
     setFormData({

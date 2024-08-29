@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef} from 'react';
 import { sendEmail } from '../mailApi'; // Adjust this path if needed
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -14,18 +14,16 @@ const RequestForm = () => {
     userId: '', // Include userId in the state
   });
 
-  
+   // Reference for the file input
+   const fileInputRef = useRef(null);
 
   useEffect(() => {
-
-    
-
     const storedUserId = localStorage.getItem('userId');
     if (storedUserId) {
       setFormData((prevData) => ({
         ...prevData,
         userId: storedUserId,
-      }));
+        }));
     } else {
       toast.error("User ID is missing. Please log in again.", { autoClose: 2000 });
     }
@@ -49,10 +47,6 @@ const RequestForm = () => {
 };
 
 
-
-
-  
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -62,6 +56,12 @@ const RequestForm = () => {
         toast.error("User ID is missing or incorrect. Please log in again.", { autoClose: 2000 });
         return;
     }
+
+    // Check if attachments are provided
+    if (formData.attachments.length === 0) {
+      toast.error("Attachments are required to submit the request.", { autoClose: 2000 });
+      return;
+  }
 
     const data = new FormData();
     Object.keys(formData).forEach(key => {
@@ -89,6 +89,15 @@ const RequestForm = () => {
         await sendEmail(data);
         toast.success("Request submitted successfully!", { autoClose: 2000 });
         resetForm();
+        
+         // Refresh the page after 2 seconds
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+
+     
+      
+        
     } catch (error) {
         console.error("Detailed error:", error);
         toast.error("Failed to submit request. Please try again.", { autoClose: 2000 });
@@ -107,6 +116,11 @@ const RequestForm = () => {
       attachments: [],
       userId: formData.userId, // Preserve userId when resetting the form
     });
+
+    // If you are using a file input element, reset it too
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''; // Clear the file input field
+    }
   };
 
   return (

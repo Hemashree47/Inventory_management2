@@ -15,8 +15,16 @@ const getISTTime = () => {
 
 export const sendMail = async (req, res) => {
     const { project, vendor, leadTime, amount, approvers, userId } = req.body;
+
     
-    const attachments = req.files || [];
+    
+    const attachments = req.files;
+
+    // Validate that attachments are provided
+    if (!attachments || attachments.length === 0) {
+        return res.status(400).json({ error: 'Attachments are required to send the email.' });
+    }
+
 
     // console.log('Request Body:', req.body);
     // console.log('Files:', req.files); // Log files
@@ -26,7 +34,7 @@ export const sendMail = async (req, res) => {
 
     const currentTime = getISTTime();
 
-    if (!project || !vendor || !leadTime || !amount || !approvers || !userId) {
+    if (!project || !vendor || !leadTime || !amount || !approvers || !userId || !attachments) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -130,7 +138,7 @@ export const response = async (req, res) => {
         content: Buffer.from(file.content, 'base64') // Convert Base64 back to Buffer
     }));
 
-    console.log('Attachment Objects:', attachmentObjects);
+    
 
     const amount = form.amount
     // Handle response based on status
@@ -262,14 +270,16 @@ export const getRequests = async (req, res) => {
 };
 
 export const adminRequests=async(req,res)=>{
-    try {
-        // Retrieve all documents from the Form collection
-        const requests = await Form.find().exec();
-        res.json(requests);
-    } catch (err) {
-        console.error('Error fetching requests:', err);
-        res.status(500).send('Error fetching requests.');
-    }
+    
+        try {
+            const requests = await Form.find({}).populate('user', 'username');
+            //console.log(requests);
+            res.json(requests);
+        } catch (err) {
+            console.error('Error fetching requests:', err.message);
+        }
+    
+    
 }
 
 function getMimeType(filename) {

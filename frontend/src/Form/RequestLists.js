@@ -14,6 +14,8 @@ const RequestLists = () => {
 
     const Navigate=useNavigate();
 
+    
+
     useEffect(() => {
         const fetchRequests = async () => {
             const userId = localStorage.getItem('userId');
@@ -41,6 +43,7 @@ const RequestLists = () => {
                 try {
                     const response = await RequestList(userId);
                     setRequests(response.data);
+                    setLoading(false);
                 } catch (err) {
                     setError('Failed to fetch data');
                     console.error('Error details:', err.response ? err.response.data : err.message);
@@ -51,6 +54,8 @@ const RequestLists = () => {
             }
             
         fetchRequests();
+
+        
     }, []);
 
     

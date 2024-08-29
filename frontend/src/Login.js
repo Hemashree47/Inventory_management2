@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import logo from './images/xyma.png';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Login = ({ onLoginSuccess }) => {
   const [formData, setFormData] = useState({ username: '', password: '' });
@@ -27,6 +29,7 @@ const Login = ({ onLoginSuccess }) => {
 
             console.log(res.data.role)
             onLoginSuccess(res.data.token); // Pass the token to the parent component
+            toast.success("Login Successfully!!", { autoClose: 2000 });
             navigate('/ButtonPage');
         } else {
             console.error('User ID is missing in response');
@@ -34,7 +37,8 @@ const Login = ({ onLoginSuccess }) => {
         }
     } catch (err) {
         console.error('Error logging in:', err.response?.data || err.message);
-        alert('Login failed. Please try again.');
+        toast.error("Username or password is not correct!! Please try again!!", { autoClose: 2000 });
+        
     }
 };
   

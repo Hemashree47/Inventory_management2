@@ -24,12 +24,7 @@ const ButtonPage = () => {
       >
         Request Form
       </button>
-      <button
-        onClick={() => navigate('/ProjectModal')}
-        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-red-600"
-      >
-        Inventory Management
-      </button>
+    
     </div>
   );
 };

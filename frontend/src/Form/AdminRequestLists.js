@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 
-const RequestLists = () => {
+const AdminDashboard = () => {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -14,7 +14,7 @@ const RequestLists = () => {
     useEffect(() => {
         const fetchRequests = async () => {
             const userId = localStorage.getItem('userId');
-            const isAdmin = localStorage.getItem('isAdmin'); // Check if user is admin
+           // const isAdmin = localStorage.getItem('isAdmin'); // Check if user is admin
 
 
             if (!userId) {
@@ -25,6 +25,7 @@ const RequestLists = () => {
             try {
                 const response = await AdminRequests();
                 setRequests(response.data);
+                //window.location.reload(); // Force reload the page
             } catch (err) {
                 setError('Failed to fetch data');
                 console.error('Error details:', err.response ? err.response.data : err.message);
@@ -126,7 +127,7 @@ const RequestLists = () => {
                         <tbody>
                             {filteredRequests.map(request => (
                                 <tr key={request._id} className="border-b">
-                                  <td className="py-2 px-4">{request.userId ? request.userId.username : 'Unknown'}</td> {/* Displaying username */}
+                                <td className="py-2 px-4">{request.user ? request.user.username : 'Unknown'}</td>
                                     <td className="py-2 px-4">{request.project}</td>
                                     <td className="py-2 px-4">{request.vendor}</td>
                                     <td className="py-2 px-4">
@@ -166,4 +167,4 @@ const RequestLists = () => {
 };
 
 
-export default RequestLists;
+export default AdminDashboard;

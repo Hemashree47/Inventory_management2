@@ -124,9 +124,9 @@ const RequestForm = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center space-y-4 p-4">
-      <h1 className="text-red-600 font-bold text-2xl text-center mb-7">PURCHASE REQUEST FORM</h1>
-      <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto bg-gradient-to-r from-green-100 to-blue-100 p-6 rounded-lg shadow-md w-full max-w-4xl">
+    <div className="flex flex-col items-center justify-center space-y-4 p-4 bg-blue-900">
+      <h1 className="text-white font-bold text-2xl text-center mb-7">PURCHASE REQUEST FORM</h1>
+      <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto bg-blue-200 p-6 rounded-lg shadow-md w-full max-w-4xl">
         <div className="mb-4">
           <label htmlFor="project" className="block text-sm font-medium text-gray-700">Project</label>
           <input

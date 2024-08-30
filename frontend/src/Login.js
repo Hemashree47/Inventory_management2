@@ -25,12 +25,20 @@ const Login = ({ onLoginSuccess }) => {
         // Store user ID in local storage
         if (res.data.userId) {
             localStorage.setItem('userId', res.data.userId); // Ensure userId is stored
-            localStorage.setItem('adminRole', res.data.role);
+            localStorage.setItem('Role', res.data.role);
 
-            console.log(res.data.role)
+
+            const role=localStorage.getItem('Role');
             onLoginSuccess(res.data.token); // Pass the token to the parent component
             toast.success("Login Successfully!!", { autoClose: 2000 });
-            navigate('/ButtonPage');
+
+            if(role=='user'){
+              navigate('/ButtonPage',{ replace: true });
+            }
+            else{
+              navigate('/ButtonPageAdmin',{ replace: true })
+            }
+            
         } else {
             console.error('User ID is missing in response');
             alert('Login failed. User ID is missing.');

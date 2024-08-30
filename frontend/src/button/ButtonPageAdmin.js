@@ -1,5 +1,9 @@
 import React from 'react';
 import {Link, useNavigate} from 'react-router-dom'
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { FaHistory, FaClipboardList } from 'react-icons/fa';
 
 
 const ButtonPage = () => {
@@ -10,21 +14,55 @@ const ButtonPage = () => {
         alert(`${buttonName} clicked!`);
     };
 
+
+    const handleLogout = async () => {
+      try {
+          await axios.post('http://localhost:5000/api/logout', {}, { withCredentials: true });
+          toast.success('Logout Successfully!!', { autoClose: 1000 });
+          // Clear user-related data from local storage
+          localStorage.removeItem('userId');
+          localStorage.removeItem('Role');
+          
+          // Use replace to prevent back navigation
+          navigate('/login', { replace: true });
+  
+          // Optionally, reload the page to ensure state is reset
+          window.location.reload();
+      } catch (error) {
+          console.error('Error during logout:', error);
+          toast.error('Failed to log out', { autoClose: 1000 });
+      }
+  };
+
   return (
-    <div className="flex flex-row items-center justify-center h-screen space-x-4">
-      <button
-        onClick={() => navigate('/RequestLists')}
-        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-blue-600"
-      >
-        Button 1
-      </button>
-      <button
-        onClick={() => navigate('/RequestForm')}
-        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-green-600"
-      >
-        Request Form
-      </button>
-    
+    <div className="relative flex flex-col items-center justify-center h-screen bg-cover bg-center bg-gradient-to-r from-teal-200 via-pink-200 to-yellow-200 " >
+      {/* Card container */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div
+          onClick={() => navigate('/AdminrequestLists')}
+          className="flex flex-col items-center justify-center w-64 h-64 bg-gray-400 text-white rounded-lg shadow-lg cursor-pointer hover:bg-blue-600 transition duration-300"
+        >
+          <FaHistory className="text-4xl mb-4" />
+          <span>Request History</span>
+        </div>
+        <div
+          onClick={() => navigate('/RequestForm')}
+          className="flex flex-col items-center justify-center w-64 h-64 bg-gray-400 text-white rounded-lg shadow-lg cursor-pointer hover:bg-green-600 transition duration-300"
+        >
+          <FaClipboardList className="text-4xl mb-4" />
+          <span>Request Form</span>
+        </div>
+      </div>
+
+      {/* Logout button in the top-right corner */}
+      <div className="absolute top-4 right-4">
+        <button
+          className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-700 transition duration-300"
+          onClick={handleLogout}
+        >
+          Logout
+        </button>
+      </div>
     </div>
   );
 };

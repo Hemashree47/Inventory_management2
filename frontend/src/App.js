@@ -11,7 +11,8 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import RequestLists from './Form/RequestLists';
-import AdminDashboard from './Form/AdminDashboard';
+import AdminRequestLists from './Form/AdminRequestLists';
+import ButtonPageAdmin from './button/ButtonPageAdmin';
 
 // Function to get the token from cookies
 const getTokenFromCookies = () => {
@@ -104,9 +105,10 @@ function App() {
             <Route path="/ProjectModal" element={isAuthenticated ? <ProjectModal /> : <Navigate to="/login" />} /> */}
 
             <Route path='/' element={<Login onLoginSuccess={handleLoginSuccess} />} />
+            {/* <Route path="/" element={<Navigate to={isAuthenticated ? "/RequestLists" : "/login"} />} /> */}
             <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
 
-            <Route path="/AdminDashboard" element={<AdminDashboard />} />
+            <Route path="/AdminRequestLists" element={<AdminRequestLists />} />
             <Route
             path="/RequestForm"
             element={<RequestForm userId={localStorage.getItem('userId')} />}
@@ -119,6 +121,7 @@ function App() {
             <Route path='/userRequestForm' element={< RequestForm/>}/>
             <Route path='/userRequestLists' element={< RequestLists/>}/>
             <Route path='/ButtonPage' element={< ButtonPage/>}/>
+            <Route path='/ButtonPageAdmin' element={< ButtonPageAdmin/>}/>
             <Route path="/signup" element={<Signup />} />
 
         </Routes>

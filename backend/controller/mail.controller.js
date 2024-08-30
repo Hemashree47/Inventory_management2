@@ -77,7 +77,7 @@ export const sendMail = async (req, res) => {
         // Set up email options
         const mailOptions = {
             from: process.env.EMAIL_USER,
-            to: 'hemashree1910@gmail.com',
+            to: approvers,
             subject: 'Request form',
             html: `
                 <p>Project: ${project}</p>

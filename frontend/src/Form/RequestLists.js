@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { AdminRequests, RequestList } from '../mailApi';
+import {  RequestList } from '../mailApi';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
-
+import { saveAs } from 'file-saver';
+import { unparse } from 'papaparse';
+import DownloadReportModal2 from './DownloadReportModal2';
 
 const RequestLists = () => {
     const [requests, setRequests] = useState([]);
@@ -11,7 +13,7 @@ const RequestLists = () => {
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedStatus, setSelectedStatus] = useState('');
-
+    const [modalIsOpen, setModalIsOpen] = useState(false);
     const Navigate=useNavigate();
 
     
@@ -58,6 +60,39 @@ const RequestLists = () => {
         (selectedStatus === '' || request.status === selectedStatus)
     );
     
+    const handleDownloadCSV = (project, vendor, status) => {
+        const csvData = filteredRequests
+          .filter(row =>
+            (!project || row.project === project.value) &&
+            (!vendor || row.vendor === vendor.value) &&
+            (!status || row.status === status.value) 
+           
+          )
+          .map((row) => ({
+            
+            Project: row.project,
+            Vendor: row.vendor,
+            'Delivery Lead Time': new Date(row.leadTime).toLocaleDateString('en-CA'),
+            'Total Purchase Amount': row.amount,
+            Approvers: row.approvers,
+            Status: row.status,
+            Attachments: row.attachments.map(a => a.filename).join(', ')
+          }));
+    
+        const csv = unparse(csvData, {
+          header: true,
+          skipEmptyLines: true
+        });
+    
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        saveAs(blob, 'request_report.csv');
+      };
+    
+      // Extract unique options for the dropdowns
+      const projects = [...new Set(requests.map(r => r.project))].map(p => ({ value: p, label: p }));
+      const vendors = [...new Set(requests.map(r => r.vendor))].map(v => ({ value: v, label: v }));
+      const statuses = [...new Set(requests.map(r => r.status))].map(s => ({ value: s, label: s }));
+      
     
     
 
@@ -99,6 +134,12 @@ const RequestLists = () => {
                     />
                     <i className="fas fa-search absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400"></i>
                 </div>
+                <button
+                    onClick={() => setModalIsOpen(true)}
+                    className="ml-4 bg-green-500 text-white py-2 px-4 rounded-xl hover:bg-green-600"
+                    >
+                    Download Report
+                </button>
             </div>
 
             {/* Table */}
@@ -166,6 +207,14 @@ const RequestLists = () => {
                     </table>
                 </div>
             </div>
+            <DownloadReportModal2
+                isOpen={modalIsOpen}
+                onRequestClose={() => setModalIsOpen(false)}
+                projects={projects}
+                vendors={vendors}
+                statuses={statuses}
+                onDownload={handleDownloadCSV}
+            />
         </div>
     );
 };

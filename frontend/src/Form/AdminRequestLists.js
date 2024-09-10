@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { AdminRequests, RequestList } from '../mailApi';
+import { AdminRequests } from '../mailApi';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import { saveAs } from 'file-saver';
+import { unparse } from 'papaparse';
+import DownloadReportModal from './DownloadReportModal';
 
 const AdminRequestLists = () => {
     const [requests, setRequests] = useState([]);
@@ -10,6 +12,7 @@ const AdminRequestLists = () => {
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedStatus, setSelectedStatus] = useState('');
+    const [modalIsOpen, setModalIsOpen] = useState(false);
 
     useEffect(() => {
         const fetchRequests = async () => {
@@ -54,6 +57,40 @@ const AdminRequestLists = () => {
     
     
     
+    const handleDownloadCSV = (project, vendor, status, username) => {
+    const csvData = filteredRequests
+      .filter(row =>
+        (!project || row.project === project.value) &&
+        (!vendor || row.vendor === vendor.value) &&
+        (!status || row.status === status.value) &&
+        (!username || row.user.username === username.value)
+      )
+      .map((row) => ({
+        Username: row.user ? row.user.username : 'Unknown',
+        Project: row.project,
+        Vendor: row.vendor,
+        'Delivery Lead Time': new Date(row.leadTime).toLocaleDateString('en-CA'),
+        'Total Purchase Amount': row.amount,
+        Approvers: row.approvers,
+        Status: row.status,
+        Attachments: row.attachments.map(a => a.filename).join(', ')
+      }));
+
+    const csv = unparse(csvData, {
+      header: true,
+      skipEmptyLines: true
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    saveAs(blob, 'request_report.csv');
+  };
+
+  // Extract unique options for the dropdowns
+  const projects = [...new Set(requests.map(r => r.project))].map(p => ({ value: p, label: p }));
+  const vendors = [...new Set(requests.map(r => r.vendor))].map(v => ({ value: v, label: v }));
+  const statuses = [...new Set(requests.map(r => r.status))].map(s => ({ value: s, label: s }));
+  const usernames = [...new Set(requests.map(r => r.user ? r.user.username : 'Unknown'))].map(u => ({ value: u, label: u }));
+  
 
     // const updateStatus = async (requestId, newStatus) => {
     //     try {
@@ -81,89 +118,105 @@ const AdminRequestLists = () => {
 
     return (
         <div className="w-full h-screen flex flex-col p-4 bg-gradient-to-r from-blue-950 to-green-900">
-            {/* Search Bar */}
-            <div className="mb-4 flex justify-end">
-                <div className="relative text-white ">
-                    <input
-                        type="text"
-                        placeholder="Search by project name"
-                        value={searchQuery}
-                        onChange={handleSearchChange}
-                        className="p-2 pl-10 rounded-xl w-full max-w-xs bg-gray-400 bg-opacity-20"
-                    />
-                    <i className="fas fa-search absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400"></i>
-                </div>
+          {/* Search Bar */}
+          <div className="mb-4 flex justify-end">
+            <div className="relative text-white ">
+              <input
+                type="text"
+                placeholder="Search by project name"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="p-2 pl-10 rounded-xl w-full max-w-xs bg-gray-400 bg-opacity-20"
+              />
+              <i className="fas fa-search absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400"></i>
             </div>
-
-            {/* Table */}
-            <div className="flex-grow overflow-hidden">
-                <div className="overflow-auto max-h-[calc(100vh-150px)]">
-                    <table className="min-w-full bg-white bg-opacity-20">
-                        <thead className="bg-gray-100 shadow-md">
-                            <tr>
-                                <th className="py-2 px-4 text-left sticky top-0 z-10 bg-gray-900 text-white">Username</th>
-                                <th className="py-2 px-4 text-left sticky top-0 z-10 bg-gray-900 text-white">Project</th>
-                                <th className="py-2 px-4 text-left sticky top-0 z-10 bg-gray-900 text-white">Vendor</th>
-                                <th className="py-2 px-4 text-left sticky top-0 z-10 bg-gray-900 text-white">Delivery Lead Time</th>
-                                <th className="py-2 px-4 text-left sticky top-0 z-10 bg-gray-900 text-white">Total Purchase Amount</th>
-                                <th className="py-2 px-4 text-left sticky top-0 z-10 bg-gray-900 text-white">Approvers</th>
-                                <th className="py-2 px-4 text-left sticky top-0 z-10 bg-gray-900 text-white">
-                                    Status
-                                    {/* Status Dropdown */}
-                                    <select
-                                        value={selectedStatus}
-                                        onChange={handleStatusChange}
-                                        className="ml-2 border p-1 rounded bg-gray-900 text-white"
-                                    >
-                                        <option value="">All</option>
-                                        <option value="pending">Pending</option>
-                                        <option value="accepted">Accepted</option>
-                                        <option value="declined">Declined</option>
-                                    </select>
-                                </th>
-                                <th className="py-2 px-4 text-left sticky top-0 z-10 bg-gray-900 text-white">Attachments</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredRequests.map(request => (
-                                <tr key={request._id} className="">
-                                <td className="py-2 px-4 text-white">{request.user ? request.user.username : 'Unknown'}</td>
-                                    <td className="py-2 px-4 text-white">{request.project}</td>
-                                    <td className="py-2 px-4 text-white">{request.vendor}</td>
-                                    <td className="py-2 px-4 text-white">
-                                        {new Date(request.leadTime).toLocaleDateString('en-CA')}
-                                    </td>
-                                    <td className="py-2 px-4 text-white">{request.amount}</td>
-                                    <td className="py-2 px-4 text-white">{request.approvers}</td>
-                                    <td className="py-2 px-4 text-white">
-                                        <div
-                                            className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusStyles[request.status]}`}
-                                        >
-                                            {request.status}
-                                        </div>
-                                    </td>
-                                    <td className="py-2 px-4 text-white">
-                                        {request.attachments && request.attachments.map((attachment, index) => (
-                                            <div key={index}>
-                                                <a
-                                                    href={`http://localhost:5000/api/attachments/${request._id}/${attachment.filename}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-blue-200 hover:underline"
-                                                >
-                                                    {attachment.filename}
-                                                </a>
-                                            </div>
-                                        ))}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+            <button
+              onClick={() => setModalIsOpen(true)}
+              className="ml-4 bg-green-500 text-white py-2 px-4 rounded-xl hover:bg-green-600"
+            >
+              Download Report
+            </button>
+          </div>
+    
+          {/* Table */}
+          <div className="flex-grow overflow-hidden">
+            <div className="overflow-auto max-h-[calc(100vh-150px)]">
+              <table className="min-w-full bg-white bg-opacity-20">
+                <thead className="bg-gray-100 shadow-md sticky top-0 z-10">
+                  <tr>
+                    <th className="py-2 px-4 text-left bg-gray-900 text-white">Username</th>
+                    <th className="py-2 px-4 text-left bg-gray-900 text-white">Project</th>
+                    <th className="py-2 px-4 text-left bg-gray-900 text-white">Vendor</th>
+                    <th className="py-2 px-4 text-left bg-gray-900 text-white">Delivery Lead Time</th>
+                    <th className="py-2 px-4 text-left bg-gray-900 text-white">Total Purchase Amount</th>
+                    <th className="py-2 px-4 text-left bg-gray-900 text-white">Approvers</th>
+                    <th className="py-2 px-4 text-left bg-gray-900 text-white">
+                      Status
+                      {/* Status Dropdown */}
+                      <select
+                        value={selectedStatus}
+                        onChange={handleStatusChange}
+                        className="ml-2 border p-1 rounded bg-gray-900 text-white"
+                      >
+                        <option value="">All</option>
+                        <option value="pending">Pending</option>
+                        <option value="accepted">Accepted</option>
+                        <option value="declined">Declined</option>
+                      </select>
+                    </th>
+                    <th className="py-2 px-4 text-left bg-gray-900 text-white">Attachments</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRequests.map(request => (
+                    <tr key={request._id}>
+                      <td className="py-2 px-4 text-white">{request.user ? request.user.username : 'Unknown'}</td>
+                      <td className="py-2 px-4 text-white">{request.project}</td>
+                      <td className="py-2 px-4 text-white">{request.vendor}</td>
+                      <td className="py-2 px-4 text-white">
+                        {new Date(request.leadTime).toLocaleDateString('en-CA')}
+                      </td>
+                      <td className="py-2 px-4 text-white">{request.amount}</td>
+                      <td className="py-2 px-4 text-white">{request.approvers}</td>
+                      <td className="py-2 px-4 text-white">
+                        <div
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusStyles[request.status]}`}
+                        >
+                          {request.status}
+                        </div>
+                      </td>
+                      <td className="py-2 px-4 text-white">
+                        {request.attachments && request.attachments.map((attachment, index) => (
+                          <div key={index}>
+                            <a
+                              href={`http://localhost:5000/api/attachments/${request._id}/${attachment.filename}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-200 hover:underline"
+                            >
+                              {attachment.filename}
+                            </a>
+                          </div>
+                        ))}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
+          </div>
+    
+          <DownloadReportModal
+            isOpen={modalIsOpen}
+            onRequestClose={() => setModalIsOpen(false)}
+            projects={projects}
+            vendors={vendors}
+            statuses={statuses}
+            usernames={usernames}
+            onDownload={handleDownloadCSV}
+          />
         </div>
-    );
+      );
 };
 
 

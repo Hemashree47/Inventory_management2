@@ -37,7 +37,7 @@ const ButtonPage = () => {
   return (
     <div className="relative flex flex-col items-center justify-center h-screen bg-cover bg-center bg-gradient-to-r from-teal-200 via-pink-200 to-yellow-200 " >
       {/* Card container */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div
           onClick={() => navigate('/AdminrequestLists')}
           className="flex flex-col items-center justify-center w-64 h-64 bg-gray-400 text-white rounded-lg shadow-lg cursor-pointer hover:bg-blue-600 transition duration-300"
@@ -51,6 +51,13 @@ const ButtonPage = () => {
         >
           <FaClipboardList className="text-4xl mb-4" />
           <span>Request Form</span>
+        </div>
+        <div
+          onClick={() => navigate('/RequestForm')}
+          className="flex flex-col items-center justify-center w-64 h-64 bg-gray-400 text-white rounded-lg shadow-lg cursor-pointer hover:bg-green-600 transition duration-300"
+        >
+          <FaClipboardList className="text-4xl mb-4" />
+          <span>Users</span>
         </div>
       </div>
 

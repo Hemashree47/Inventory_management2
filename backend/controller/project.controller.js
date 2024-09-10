@@ -1,5 +1,4 @@
 import Project from "../models/user.project.model.js";
-let components = {};
 
 export const addProject=async(req,res)=>{
     try{

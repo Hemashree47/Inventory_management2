@@ -2,9 +2,11 @@ import User from "../models/user.login.model.js";
 import jwt from 'jsonwebtoken'; 
 import bcrypt from "bcrypt";
 import dotenv from 'dotenv';
+
+import { encrypt , decrypt } from "../utils/encryption.js";
 dotenv.config();
 
-const SECRET_KEY = process.env.SECRET_KEY;
+const SECRET_KEY = process.env.SECRET_KEY; // Use a strong secret key stored in your environment variables
 
 export const signup = async (req, res) => {
     try {
@@ -21,12 +23,11 @@ export const signup = async (req, res) => {
             return res.status(400).json({ error: "Username already exists" });
         }
 
-        // Hash password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        // Encrypt the password
+        const encryptedPassword = encrypt(password);
 
-        // Create new user
-        const newUser = new User({ name, username, password: hashedPassword });
+        // Create new user with encrypted password
+        const newUser = new User({ name, username, password: encryptedPassword });
         await newUser.save();
         
         res.status(201).json({ msg: 'User registered successfully' });
@@ -45,9 +46,10 @@ export const login = async (req, res) => {
             return res.status(400).json({ error: "Invalid username" });
         }
 
-        const isPasswordCorrect = await bcrypt.compare(password, user.password);
+        // Decrypt the stored password
+        const decryptedPassword = decrypt(user.password);
 
-        if (!isPasswordCorrect) {
+        if (password !== decryptedPassword) {
             return res.status(400).json({ error: "Password is incorrect" });
         }
 
@@ -60,7 +62,7 @@ export const login = async (req, res) => {
         res.cookie("token", token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: "Strict" });
 
         // Ensure userId is included in the response
-        res.status(200).json({ msg: 'Login successful', token, userId: user._id ,role:user.role ,username:user.username});
+        res.status(200).json({ msg: 'Login successful', token, userId: user._id, role: user.role, username: user.username });
     } catch (error) {
         console.log("Error in login controller", error.message);
         res.status(500).json({ error: "Internal Server Error" });
@@ -86,15 +88,14 @@ export const adminSignup = async(req,res)=>{
             return res.status(400).json({ error: 'Username already exists' });
         }
 
-        // Hash the password
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        // Encrypt the password
+        const encryptedPassword = encrypt(password);
 
         // Create a new admin user
         const newUser = new User({
             name,
             username,
-            password: hashedPassword,
+            password: encryptedPassword,
             role: 'admin',
         });
 
@@ -162,6 +163,46 @@ export const validatePassword=async(req,res)=>{
 }
 
 
-export const getAllUsers=async(req,res)=>{
+export const getAllUsers = async (req, res) => {
+    try {
+        // Fetch users with their username, name, and encrypted password fields
+        const users = await User.find({ role: 'user' });
+
+        // Decrypt passwords and prepare response
+        const decryptedUsers = users.map(user => ({
+            username: user.username,
+            name: user.name,
+            password: decrypt(user.password) // Decrypt password
+        }));
+
+        res.status(200).json({ users: decryptedUsers });
+    } catch (error) {
+        console.error("Error in fetching users:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+  
+
+export const deleteUser = async (req, res) => {
+    const { username } = req.params;
     
-}
+    if (!username) {
+        return res.status(400).json({ error: 'User name is required' });
+    }
+
+    try {
+        const user = await User.findOneAndDelete({ username });
+        
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        console.log(`User ${username} deleted successfully`);
+        res.status(200).json({ message: 'User deleted successfully' });
+    } catch (error) {
+        console.error(`Error in deleting user: ${error.message}`);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+

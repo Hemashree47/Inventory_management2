@@ -13,7 +13,12 @@ import 'react-toastify/dist/ReactToastify.css';
 import RequestLists from './Form/RequestLists';
 import AdminRequestLists from './Form/AdminRequestLists';
 import ButtonPageAdmin from './button/ButtonPageAdmin';
-
+import UserDatas from './Form/UserDatas';
+import Components from './Inventory/Components';
+import ProjectModal2 from './Inventory/ProjectModal2';
+import ParentComponent from './Inventory/ParentComponent';
+import ProjectComponentsPage2 from './Inventory/ProjectComponentsPage2';
+import ProjectButtonPage from './button/ProjectButtonPage'
 // Function to get the token from cookies
 const getTokenFromCookies = () => {
     const name = "token=";
@@ -123,7 +128,17 @@ function App() {
             <Route path='/ButtonPage' element={< ButtonPage/>}/>
             <Route path='/ButtonPageAdmin' element={< ButtonPageAdmin/>}/>
             <Route path="/signup" element={<Signup />} />
+            <Route path="/UserDatas" element={<UserDatas />} />
 
+
+            <Route path="/projects/:projectName" element={ <ProjectComponentsPage /> } />
+            <Route path="/projects/:projectName/available" element={ <ProjectComponentsPage2 /> } />
+            {/* <Route path="/ProjectModal" element={isAuthenticated ? <ProjectModal /> : <Navigate to="/login" />} /> */}
+            <Route path="/ProjectModal" element={<ProjectModal/>} />
+            <Route path='/ProjectButtonPage' element={<ProjectButtonPage/>}/>
+            <Route path='/Components' element={<Components/>}/>
+            <Route path="/ProjectModal2" element={<ProjectModal2/>} />
+            <Route path="/ParentComponent" element={<ParentComponent/>} />
         </Routes>
     );
 }

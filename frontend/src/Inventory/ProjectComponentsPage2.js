@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import AddComponentModal from './AddComponentModal';
-import PasswordModal from '../Inventory/PasswordModal';
-import ConfirmComponentModal from '../Inventory/ConfirmComponentModal';
-import UpdateComponentModal from '../Inventory/updateComponentModal';
-import { getProjectComponents, addComponent, updateComponentQuantity, deleteComponents, updateComponentName } from '../projectApi';
+import PasswordModal from './PasswordModal';
+import ConfirmComponentModal from './ConfirmComponentModal';
+import UpdateComponentModal from './updateComponentModal';
+import { getRegisterComponents,getProjectComponents, addComponent, updateComponentQuantity, deleteComponents, updateComponentName } from '../projectApi';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 const FIXED_PASSWORD = "0000"
 
 
-const ProjectComponentsPage = () => {
+const ProjectComponentsPage2 = () => {
     const { projectName } = useParams();
     const [isComponentModalOpen, setIsComponentModalOpen] = useState(false);
     const [components, setComponents] = useState({});
+    const [registerComponents, setRegisterComponents] = useState({}); // State to store register components
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -44,20 +45,17 @@ const ProjectComponentsPage = () => {
 
 
     const handleSubmitComponent = async (componentName, quantity) => {
-        // Check if filteredComponents and componentName are valid
-        if (!componentName || !filteredComponents) {
-            toast.error('Invalid component name or missing components list', { autoClose: 2000 });
-            return;
-        }
-    
-        // Check if the component already exists (ensuring componentName is valid)
+        // Convert both the existing component names and the input name to lowercase to make the check case-insensitive
         const componentExists = filteredComponents.some(
-            (component) => component?.componentName?.toLowerCase() === componentName.toLowerCase()
+            (component) => component.componentName.toLowerCase() === componentName.toLowerCase()
         );
     
         if (componentExists) {
-            toast.warning('Component already exists', { autoClose: 2000 });
-            return;
+            // Display an error if the component already exists
+            toast.warning('Component already exists', {
+                autoClose: 2000,
+            });
+            return; // Stop further execution if duplicate is found
         }
     
         try {
@@ -65,16 +63,17 @@ const ProjectComponentsPage = () => {
             toast.success('Component added successfully', {
                 autoClose: 2000,
             });
-            await fetchComponents(); // Refresh the component list
+            await fetchComponents(); // Refresh the component list after adding
             handleCloseComponentModal();
         } catch (error) {
             console.error('Error adding component:', error);
+            // Extract and show more specific error messages if available
             const errorMessage = error.response?.data?.error || 'Error adding component';
             toast.error(errorMessage, { autoClose: 2000 });
         }
     };
     
-    
+
 
     const askForPassword = (action) => {
         setPendingAction(() => action); // Set the action to be performed after authentication
@@ -267,8 +266,36 @@ const ProjectComponentsPage = () => {
         }
     };
 
+    const fetchRegisterComponents = async () => {
+        try {
+            const response = await getRegisterComponents(); // Fetch register components
+            console.log('Fetched register components:', response); // Log the full response
+            
+            if (Array.isArray(response) && response.length > 0) {
+                // Transform the array into an object with component names as keys
+                const componentsObject = response.reduce((acc, component) => {
+                    acc[component.componentName] = {
+                        name: component.componentName,
+                        quantity: component.quantity,
+                        _id: component._id
+                    };
+                    return acc;
+                }, {});
+                setRegisterComponents(componentsObject); // Set register components if available
+            } else {
+                console.warn('No components found in the response');
+                setRegisterComponents({}); // Set to empty object if no components are found
+            }
+        } catch (error) {
+            console.error('Error fetching register components:', error);
+        }
+    };
+    
+    
+    
     useEffect(() => {
         fetchComponents();
+        fetchRegisterComponents(); // Fetch register components on load
     }, [projectName]);
 
     const filteredComponents = Object.entries(components).filter(([componentName]) =>
@@ -276,76 +303,72 @@ const ProjectComponentsPage = () => {
     );
 
     return (
-        <div className="w-full h-screen flex flex-col  bg-gradient-to-r from-amber-800 to-red-950">
+        <div className="w-full h-screen flex flex-col bg-rose-900">
             <div className="flex justify-between items-center p-4">
-                <h2 className="text-white text-2xl font-bold">Components for {projectName}</h2>
-                <div className='relative'>
+                <h2 className="flex-grow text-white text-2xl font-bold p-4 text-center">Components for {projectName}</h2>
+                <div className="relative ">
                     <input
                         type="text"
                         placeholder="Search components..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className=" p-2 pl-10 rounded-xl w-full bg-gray-400 bg-opacity-20 hover:border-gray-300"
+                        className=" p-2 pl-10 rounded-xl w-full bg-gray-400 bg-opacity-20"
                     />
                     <i className="fas fa-search absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400"></i>
                 </div>
             </div>
-            <button
-                className="ml-4 text-xl bg-yellow-600 text-black text-bold py-2 px-2 rounded hover:bg-white transition duration-300 mb-4 self-start font-bold"
+            {/* <button
+                className="ml-4 bg-blue-500 text-white font-bold py-2 px-2 rounded hover:bg-blue-700 transition duration-300 mb-4 self-start"
                 onClick={handleOpenComponentModal}
             >
                 Add Component
-            </button>
+            </button> */}
             {loading && <p>Loading...</p>}
             {error && <p className="text-red-500">{error}</p>}
-            <div className="flex-grow overflow-hidden  p-4 rounded-lg shadow-md">
-                <ul className="p-4 h-full overflow-y-auto">
-                    {filteredComponents.length > 0 ? (
-                        filteredComponents.map(([componentName, { quantity }]) => (
-                            <div key={componentName} className="last:border-none border-b border-gray-400 py-2 flex justify-between items-center text-white">
-                                <span className="text-xl">{componentName}</span>
-                                {/* <input
-                                    type="number"
-                                    value={quantity}
-                                    onChange={(e) => handleQuantityUpdate(componentName, parseInt(e.target.value))}
-                                    className="border rounded w-16 p-1 text-center"
-                                    min="0"
-                                /> */}
+            <div className="flex-grow shadow-md rounded-lg overflow-hidden">
+                    <ul className="p-4 h-full text-xl overflow-y-auto text-white">
+                        {filteredComponents.length > 0 ? (
+                            filteredComponents.map(([componentName, { quantity }]) => {
+                                const registerComponent = registerComponents[componentName] || {}; // Check register components
+                                const registerQty = registerComponent.quantity || 0;
                                 
-                                {/* <button
-                                        className="bg-red-500 text-white py-1 px-2 rounded hover:bg-red-700"
-                                        onClick={() => handleDeleteComponent(componentName)}
-                                    >
-                                        Delete
-                                    </button> */}
+                                // Calculate the display quantity
+                                const displayQuantity =  registerQty - quantity ;
 
-
-                                    <div className="text-xl flex justify-between items-center py-2 space-x-4">
-                                        <span className="font-medium bg-opacity-40 text-yellow-100 bg-yellow-600 border-gray-300 w-24 h-8 flex items-center justify-center rounded-md">
-                                            {quantity}
-                                        </span>
-
-                                        <button
-                                        className="text-blue-500 hover:underline"
-                                        onClick={() => handleOpenUpdateModal({ componentName, quantity })}
-                                    >
-                                        <i className="fas fa-pencil-alt"></i>
-                                    </button>
-
-                                        <button
-                                        className="text-red-500 hover:underline"
-                                        onClick={() => handleOpenConfirmModal(componentName)}
+                                return (
+                                    <div key={componentName} className="border-b last:border-none py-2 flex justify-between items-center">
+                                        <span className="font-medium">{componentName}</span>
+                                        <div className="flex justify-between items-center py-2 space-x-2">
+                                            <span className="font-medium bg-pink-200 bg-opacity-30 border-gray-300 w-56 h-8 flex items-center justify-center rounded-md text-white">
+                                                Quantity : {quantity}
+                                            </span>
+                                            <div className="flex items-center space-x-4 ">
+                                        <span className="font-medium ">Register Qty:</span>
+                                        <span 
+                                            className={`font-medium border border-b-2 w-24 h-8 flex items-center justify-center rounded-md ${
+                                                displayQuantity > 0 ? 'bg-green-800 border-green-800' :
+                                                displayQuantity < 0 ? 'bg-red-700 border-red-700' :
+                                                'bg-green-800 border-green-800'
+                                            }`}
                                         >
-                                        <i className="fas fa-trash-alt"></i>
-                                    </button>
+                                            {displayQuantity < 0
+                                                ? `${registerQty - quantity}` // Show registerQty - quantity if displayQuantity > 0
+                                                : displayQuantity > 0
+                                                ? `${registerQty}` // Show total registerQty if displayQuantity < 0
+                                                : registerQty // Show same registerQty if displayQuantity === 0
+                                            }
+                                        </span>
                                     </div>
-                            </div>
-                        ))
-                    ) : (
-                        <p className="text-white text-xl">No components available</p>
-                    )}
-                </ul>
-            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <p className="text-white text-xl">No components available</p>
+                        )}
+                    </ul>
+                </div>
+
             <AddComponentModal
                 isOpen={isComponentModalOpen}
                 onClose={handleCloseComponentModal}
@@ -356,23 +379,24 @@ const ProjectComponentsPage = () => {
                 onClose={() => setIsPasswordModalOpen(false)}
                 onSubmit={handlePasswordSubmit}
             />
-
             <UpdateComponentModal
                 isOpen={isUpdateModalOpen}
                 onClose={handleCloseUpdateModal}
                 onSubmit={handleUpdateComponent}
                 component={selectedComponent}
             />
-
             <ConfirmComponentModal
                 isOpen={isConfirmModalOpen}
                 onClose={handleCloseConfirmModal}
                 onConfirm={handleDeleteComponent}
                 message={`Are you sure you want to delete the component "${componentToDelete}"?`}
             />
-
         </div>
     );
+
+  
+    
+    
 };
 
-export default ProjectComponentsPage;
+export default ProjectComponentsPage2;

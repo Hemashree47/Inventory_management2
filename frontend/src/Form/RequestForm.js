@@ -156,7 +156,7 @@ const RequestForm = () => {
         </div>
 
         <div className="mb-4">
-          <label htmlFor="leadTime" className="block text-sm font-medium text-gray-700">Delivery Lead Time</label>
+          <label htmlFor="leadTime" className="block text-sm font-medium text-gray-700">Date</label>
           <input
             type="date"
             id="leadTime"

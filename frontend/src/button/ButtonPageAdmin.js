@@ -3,7 +3,8 @@ import {Link, useNavigate} from 'react-router-dom'
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaHistory, FaClipboardList } from 'react-icons/fa';
+import { FaHistory, FaClipboardList , FaRegUser, FaBox} from 'react-icons/fa';
+import { MdOutlineInventory } from "react-icons/md";
 
 
 const ButtonPage = () => {
@@ -24,7 +25,7 @@ const ButtonPage = () => {
           localStorage.removeItem('Role');
           
           // Use replace to prevent back navigation
-          navigate('/login', { replace: true });
+          navigate('/', { replace: true });
   
           // Optionally, reload the page to ensure state is reset
           window.location.reload();
@@ -37,7 +38,7 @@ const ButtonPage = () => {
   return (
     <div className="relative flex flex-col items-center justify-center h-screen bg-cover bg-center bg-gradient-to-r from-teal-200 via-pink-200 to-yellow-200 " >
       {/* Card container */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div
           onClick={() => navigate('/AdminrequestLists')}
           className="flex flex-col items-center justify-center w-64 h-64 bg-gray-400 text-white rounded-lg shadow-lg cursor-pointer hover:bg-blue-600 transition duration-300"
@@ -53,12 +54,28 @@ const ButtonPage = () => {
           <span>Request Form</span>
         </div>
         <div
-          onClick={() => navigate('/RequestForm')}
+          onClick={() => navigate('/UserDatas')}
+          className="flex flex-col items-center justify-center w-64 h-64 bg-gray-400 text-white rounded-lg shadow-lg cursor-pointer hover:bg-red-600 transition duration-300"
+        >
+          <FaRegUser className="text-4xl mb-4" />
+          <span>Users</span>
+
+        </div>
+        <div
+          onClick={() => navigate('/ProjectButtonPage')}
           className="flex flex-col items-center justify-center w-64 h-64 bg-gray-400 text-white rounded-lg shadow-lg cursor-pointer hover:bg-green-600 transition duration-300"
         >
-          <FaClipboardList className="text-4xl mb-4" />
-          <span>Users</span>
+          <FaBox className="text-4xl mb-4" />
+          <span>Inventory</span>
         </div>
+
+        {/* <div
+          onClick={() => navigate('/Inventory')}
+          className="flex flex-col items-center justify-center w-64 h-64 bg-gray-400 text-white rounded-lg shadow-lg cursor-pointer hover:bg-purple-600 transition duration-300"
+        >
+          <MdOutlineInventory className="text-4xl mb-4" />
+          <span>Inventory Management</span>
+        </div> */}
       </div>
 
       {/* Logout button in the top-right corner */}

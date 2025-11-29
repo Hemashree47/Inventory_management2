@@ -184,3 +184,95 @@ export const updateProjectName = async (req, res) => {
     }
 };
 
+
+
+
+export const updateComponentName = async (req, res) => {
+    const { projectName, componentName } = req.params; // The current componentName (the key in the map)
+    let { newComponentName } = req.body; // The new name to be updated
+
+    if (!newComponentName || typeof newComponentName !== 'string') {
+        return res.status(400).json({ error: 'New component name is required and should be a string' });
+    }
+
+    // Capitalize the new component name
+    newComponentName = newComponentName.charAt(0).toUpperCase() + newComponentName.slice(1).toLowerCase();
+
+    try {
+        // Find the project
+        const project = await Project.findOne({ projectName });
+
+        if (!project) {
+            return res.status(404).json({ error: 'Project not found' });
+        }
+
+        // Find the component
+        const component = project.components.get(componentName);
+
+        if (!component) {
+            return res.status(404).json({ error: 'Component not found' });
+        }
+
+        // Check if the new component name already exists (case-insensitive)
+        const existingComponents = Array.from(project.components.entries());
+        const nameExists = existingComponents.some(([key]) => key.toLowerCase() === newComponentName.toLowerCase());
+
+        if (nameExists) {
+            return res.status(400).json({ error: 'New component name already exists' });
+        }
+
+        // Create a new Map to maintain the order
+        const updatedComponents = new Map();
+
+        for (const [key, value] of project.components) {
+            if (key === componentName) {
+                // Update componentName and synchronize the name field
+                updatedComponents.set(newComponentName, {
+                    ...value,
+                    name: newComponentName // Update the `name` field
+                });
+            } else {
+                updatedComponents.set(key, value);
+            }
+        }
+
+        // Replace the old components map with the updated one
+        project.components = updatedComponents;
+
+        // Save the updated project
+        await project.save();
+
+        res.status(200).json({ message: 'Component name updated successfully' });
+    } catch (error) {
+        console.error('Error updating component name:', error.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+
+
+// Delete component
+export const deleteComponents= async (req, res) => {
+    const { projectName, componentName } = req.params;
+
+    try {
+        const project = await Project.findOne({ projectName });
+
+        if (!project) {
+            return res.status(404).json({ error: 'Project not found' });
+        }
+
+        if (!project.components.has(componentName)) {
+            return res.status(404).json({ error: 'Component not found' });
+        }
+
+        project.components.delete(componentName);
+        await project.save();
+
+        res.status(200).json({ message: 'Component deleted successfully' });
+
+    } catch (error) {
+        console.error('Error deleting component:', error.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};

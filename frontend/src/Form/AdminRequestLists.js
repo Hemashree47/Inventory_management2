@@ -147,8 +147,8 @@ const AdminRequestLists = () => {
                     <th className="py-2 px-4 text-left bg-gray-900 text-white">Username</th>
                     <th className="py-2 px-4 text-left bg-gray-900 text-white">Project</th>
                     <th className="py-2 px-4 text-left bg-gray-900 text-white">Vendor</th>
-                    <th className="py-2 px-4 text-left bg-gray-900 text-white">Delivery Lead Time</th>
-                    <th className="py-2 px-4 text-left bg-gray-900 text-white">Total Purchase Amount</th>
+                    <th className="py-2 px-4 text-left bg-gray-900 text-white">Date</th>
+                    <th className="py-2 px-4 text-left bg-gray-900 text-white">Total Purchase Amount(Rs.)</th>
                     <th className="py-2 px-4 text-left bg-gray-900 text-white">Approvers</th>
                     <th className="py-2 px-4 text-left bg-gray-900 text-white">
                       Status
